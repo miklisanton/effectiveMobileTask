@@ -1,0 +1,13 @@
+db:
+  port: ${DB_PORT}
+  host: ${DB_HOST}
+  user: ${DB_USER}
+  password: ${DB_PASSWORD}
+  name: ${DB_NAME}
+server:
+  port: ${PORT}
+external-api:
+  base-url: ${BASE_URL}
+  retries: ${RETRIES}
+  timeout: ${TIMEOUT}
+
