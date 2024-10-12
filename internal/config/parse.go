@@ -16,15 +16,15 @@ type Config struct {
 		Name     string `yaml:"name"`
 		User     string `yaml:"user"`
 		Password string `yaml:"password"`
-    } 
-    Server struct {
-        Port string `yaml:"port"`
-    } 
-    ExternalAPI struct {
-        BaseURL string  `yaml:"baseURL"`
-        Retries int     `yaml:"retries"`
-        Timeout int     `yaml:"timeout"`
-    } `yaml:"external-api"`
+	}
+	Server struct {
+		Port string `yaml:"port"`
+	}
+	ExternalAPI struct {
+		BaseURL string `yaml:"baseURL"`
+		Retries int    `yaml:"retries"`
+		Timeout int    `yaml:"timeout"`
+	} `yaml:"external-api"`
 }
 
 func NewConfig(path string) (*Config, error) {
@@ -41,11 +41,11 @@ func NewConfig(path string) (*Config, error) {
 
 	file, err = replaceEnvVars(file)
 	if err != nil {
-        return nil, err
+		return nil, err
 	}
 	err = yaml.Unmarshal(file, &config)
 	if err != nil {
-        return nil, err
+		return nil, err
 	}
 
 	return config, nil
