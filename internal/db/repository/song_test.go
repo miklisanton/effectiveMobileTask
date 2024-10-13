@@ -203,14 +203,14 @@ func TestGetFiltered(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-    err := songRepo.Delete(context.Background(), 1)
+	err := songRepo.Delete(context.Background(), 1)
 	if err != nil {
 		t.Fatalf("Error deleting song: %v", err)
 	}
 }
 
 func TestDeleteNotExist(t *testing.T) {
-    err := songRepo.Delete(context.Background(), 100)
+	err := songRepo.Delete(context.Background(), 100)
 	if err == nil {
 		t.Fatalf("Expected error, got nil and deleted")
 	}

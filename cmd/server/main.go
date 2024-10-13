@@ -59,16 +59,16 @@ func init() {
 }
 
 func main() {
-    // Setup services
-    songRepo := repository.NewSongRepository(db)
-    songService := services.NewSongService(songRepo)
-    musicInfoService, err:= services.NewMusicInfoService(cfg)
-    if err != nil {
-        log.Fatal().Err(err).Msg("Failed to initialize music info service")
-    }
-    // Setup controllers
-    songController := handlers.NewSongController(songService, musicInfoService, cfg)
-    // Setup echo
+	// Setup services
+	songRepo := repository.NewSongRepository(db)
+	songService := services.NewSongService(songRepo)
+	musicInfoService, err := services.NewMusicInfoService(cfg)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize music info service")
+	}
+	// Setup controllers
+	songController := handlers.NewSongController(songService, musicInfoService, cfg)
+	// Setup echo
 	e := echo.New()
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogURI:    true,
@@ -82,15 +82,15 @@ func main() {
 			return nil
 		},
 	}))
-    pg := e.Group("/api1/public")
+	pg := e.Group("/api1/public")
 
 	// Endpoints
-    pg.POST("/songs", songController.CreateSong)
-    pg.GET("/songs", songController.GetSongs)
-    pg.GET("/songs/:id", songController.GetSong)
-    pg.PUT("/songs/:id", songController.PutSong)
-    pg.PATCH("/songs/:id", songController.PatchSong)
-    pg.DELETE("/songs/:id", songController.DeleteSong)
-    // Start server
+	pg.POST("/songs", songController.CreateSong)
+	pg.GET("/songs", songController.GetSongs)
+	pg.GET("/songs/:id", songController.GetSong)
+	pg.PUT("/songs/:id", songController.PutSong)
+	pg.PATCH("/songs/:id", songController.PatchSong)
+	pg.DELETE("/songs/:id", songController.DeleteSong)
+	// Start server
 	e.Logger.Fatal(e.Start(":" + cfg.Server.Port))
 }

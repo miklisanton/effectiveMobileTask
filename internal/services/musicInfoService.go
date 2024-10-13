@@ -16,8 +16,9 @@ import (
 )
 
 type IMusicInfoService interface {
-    GetSongInfo(artist, name string) (*SongDetail, error)
+	GetSongInfo(artist, name string) (*SongDetail, error)
 }
+
 // MusicInfoService is a an external service, that provides additional information about songs
 type MusicInfoService struct {
 	baseURL string
@@ -25,9 +26,9 @@ type MusicInfoService struct {
 }
 
 type SongDetail struct {
-    ReleaseDate utils.CustomDate `json:"releaseDate" validate:"required"`
-    Text        string `json:"text" validate:"required"`
-    Link        string `json:"link" validate:"required"`
+	ReleaseDate utils.CustomDate `json:"releaseDate" validate:"required"`
+	Text        string           `json:"text" validate:"required"`
+	Link        string           `json:"link" validate:"required"`
 }
 
 func NewMusicInfoService(cfg *config.Config) (*MusicInfoService, error) {
@@ -43,20 +44,20 @@ func NewMusicInfoService(cfg *config.Config) (*MusicInfoService, error) {
 
 func (ms *MusicInfoService) GetSongInfo(artist, name string) (*SongDetail, error) {
 	// Construct URL for the request
-    u, err := url.Parse(ms.baseURL)
-    if err != nil {
-        return nil, err
-    }
-    u.Path = strings.TrimRight(u.Path, "/") + "/info" 
-    queryParams := url.Values{}
+	u, err := url.Parse(ms.baseURL)
+	if err != nil {
+		return nil, err
+	}
+	u.Path = strings.TrimRight(u.Path, "/") + "/info"
+	queryParams := url.Values{}
 	queryParams.Add("group", artist)
 	queryParams.Add("song", name)
-    u.RawQuery = queryParams.Encode()
+	u.RawQuery = queryParams.Encode()
 	// Send request
-    log.Info().Msgf("Sending request to %s", u.String())
+	log.Info().Msgf("Sending request to %s", u.String())
 	resp, err := ms.client.Get(u.String())
 	if err != nil {
-        log.Error().Err(err).Msg("failed to send request")
+		log.Error().Err(err).Msg("failed to send request")
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -69,14 +70,14 @@ func (ms *MusicInfoService) GetSongInfo(artist, name string) (*SongDetail, error
 
 	var songDetail SongDetail
 	if err := json.Unmarshal(body, &songDetail); err != nil {
-        log.Error().Err(err).Msg("failed to unmarshal response")
+		log.Error().Err(err).Msg("failed to unmarshal response")
 		return nil, fmt.Errorf("failed to unmarshal response")
 	}
-    if err := validator.New().Struct(songDetail); err != nil {
-        return nil, fmt.Errorf("invalid response: %v", err)
-    }
+	if err := validator.New().Struct(songDetail); err != nil {
+		return nil, fmt.Errorf("invalid response: %v", err)
+	}
 
-    log.Debug().Msgf("Release date: %v", songDetail.ReleaseDate)
+	log.Debug().Msgf("Release date: %v", songDetail.ReleaseDate)
 
 	return &songDetail, nil
 }

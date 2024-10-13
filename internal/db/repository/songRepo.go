@@ -40,10 +40,10 @@ func (r *SongRepository) Save(ctx context.Context, song *models.Song) error {
 		log.Debug().Msgf("Running query: %s", query)
 		_, err := r.db.ExecContext(ctx, query, song.Name, song.Artist, song.Lyrics, song.ReleaseDate, song.URL, *song.ID)
 		if err != nil {
-            if err, ok := err.(*pq.Error); ok && err.Code == "23505" {
-                // Unique violation
-                return fmt.Errorf("Song with name %s and artist %s already exists", song.Name, song.Artist)
-            }
+			if err, ok := err.(*pq.Error); ok && err.Code == "23505" {
+				// Unique violation
+				return fmt.Errorf("Song with name %s and artist %s already exists", song.Name, song.Artist)
+			}
 			return err
 		}
 		return nil
@@ -60,10 +60,10 @@ func (r *SongRepository) Save(ctx context.Context, song *models.Song) error {
 
 		err := row.Err()
 		if err != nil {
-            if err, ok := err.(*pq.Error); ok && err.Code == "23505" {
-                // Unique violation
-                return fmt.Errorf("Song with name %s and artist %s already exists", song.Name, song.Artist)
-            }
+			if err, ok := err.(*pq.Error); ok && err.Code == "23505" {
+				// Unique violation
+				return fmt.Errorf("Song with name %s and artist %s already exists", song.Name, song.Artist)
+			}
 			return err
 		}
 		err = row.Scan(&song.ID)
@@ -93,9 +93,9 @@ func (r *SongRepository) GetById(ctx context.Context, id int) (*models.Song, err
 	log.Debug().Msgf("Running query: %s", query)
 	err := r.db.GetContext(ctx, &song, query, id)
 	if err != nil {
-        if err == sql.ErrNoRows {
-            return nil, fmt.Errorf("Song with id %d doesn't exist", id)
-        }
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("Song with id %d doesn't exist", id)
+		}
 		return nil, err
 	}
 	return &song, nil
@@ -115,7 +115,7 @@ func (r *SongRepository) GetFiltered(ctx context.Context, filter SongFilter, off
 		query += ` AND artist= :artist`
 		count++
 	}
-    t := utils.CustomDate{}
+	t := utils.CustomDate{}
 	if filter.After != t {
 		query += ` AND release_date >= :after`
 		count++
@@ -155,8 +155,8 @@ func (r *SongRepository) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-    if count != 1 {
-        return fmt.Errorf("Song with id %d not found", id)
-    }
+	if count != 1 {
+		return fmt.Errorf("Song with id %d not found", id)
+	}
 	return nil
 }
