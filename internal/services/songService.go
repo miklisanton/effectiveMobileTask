@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"music-lib/internal/db/models"
 	"music-lib/internal/db/repository"
+	"music-lib/internal/utils"
+
 	"github.com/rs/zerolog/log"
 )
 
@@ -12,7 +14,7 @@ type ISongService interface {
     CreateSong(ctx context.Context, song *models.Song) error
     GetSongs(ctx context.Context, f repository.SongFilter, page, limit int) ([]models.Song, error) 
     GetSong(ctx context.Context, id int) (*models.Song, error)
-    UpdateSong(ctx context.Context, id int, song *models.Song) (*models.Song, error)
+    UpdateSong(ctx context.Context, song, newSong *models.Song) (*models.Song, error)
     DeleteSong(ctx context.Context, id int) error
 }
 
@@ -30,7 +32,7 @@ func (s SongService) CreateSong(ctx context.Context, song *models.Song) error {
     }
     err := s.Repo.Save(ctx, song)
     if err != nil {
-        log.Logger.Error().Err(err).Msgf("failed to save song: %v", err)
+        log.Logger.Error().Err(err).Msgf("failed to save song")
         return err
     }
     return nil
@@ -39,7 +41,7 @@ func (s SongService) CreateSong(ctx context.Context, song *models.Song) error {
 func (s SongService) GetSong(ctx context.Context, id int) (*models.Song, error) {
     song, err := s.Repo.GetById(ctx, id)
     if err != nil {
-        log.Logger.Error().Err(err).Msgf("failed to get song with id %d: %v", id, err)
+        log.Logger.Error().Err(err).Msgf("failed to get song with id %d", id)
         return nil, err
     }
     return song, nil
@@ -52,20 +54,14 @@ func (s SongService) GetSongs(ctx context.Context, f repository.SongFilter, page
     offset := (page - 1) * limit
     songs, err := s.Repo.GetFiltered(ctx, f, offset, limit)
     if err != nil {
-        log.Logger.Error().Err(err).Msgf("failed to get songs: %v", err)
+        log.Logger.Error().Err(err).Msgf("failed to get songs")
         return nil, err
     }
 
     return songs, nil
 }
 
-func (s SongService) UpdateSong(ctx context.Context, id int, newSong *models.Song) (*models.Song, error) {
-    // Retrieve song from database
-    song, err := s.Repo.GetById(ctx, id)
-    if err != nil {
-        log.Logger.Error().Err(err).Msgf("failed to update song with id %d: %v", id, err)
-        return nil, err
-    }
+func (s SongService) UpdateSong(ctx context.Context, song, newSong *models.Song) (*models.Song, error) {
     // Update provided fields
     if newSong.Artist != "" {
         song.Artist = newSong.Artist
@@ -73,7 +69,9 @@ func (s SongService) UpdateSong(ctx context.Context, id int, newSong *models.Son
     if newSong.Name != "" {
         song.Name = newSong.Name
     }
-    if newSong.ReleaseDate != "" {
+    // Empty date
+    t := utils.CustomDate{}
+    if newSong.ReleaseDate != t {
         song.ReleaseDate = newSong.ReleaseDate
     }
     if newSong.Lyrics != "" {
@@ -84,7 +82,7 @@ func (s SongService) UpdateSong(ctx context.Context, id int, newSong *models.Son
     }
     // Save updated song
     if err := s.Repo.Save(ctx, song); err != nil {
-        log.Logger.Error().Err(err).Msgf("failed to update song with id %d: %v", id, err)
+        log.Logger.Error().Err(err).Msgf("failed to update song with id %d", song.ID)
         return nil, err
     }
     return song, nil
@@ -93,7 +91,7 @@ func (s SongService) UpdateSong(ctx context.Context, id int, newSong *models.Son
 func (s SongService) DeleteSong(ctx context.Context, id int) error {
     err := s.Repo.Delete(ctx, id)
     if err != nil {
-        log.Logger.Error().Err(err).Msgf("failed to delete song with id %d: %v", id, err)
+        log.Logger.Error().Err(err).Msgf("failed to delete song with id %d", id)
         return err
     }
     return nil

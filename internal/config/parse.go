@@ -21,7 +21,7 @@ type Config struct {
 		Port string `yaml:"port"`
 	}
 	ExternalAPI struct {
-		BaseURL string `yaml:"baseURL"`
+		BaseURL string `yaml:"base-url"`
 		Retries int    `yaml:"retries"`
 		Timeout int    `yaml:"timeout"`
 	} `yaml:"external-api"`

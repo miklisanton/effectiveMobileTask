@@ -32,7 +32,7 @@ func (r *SongRepository) Save(ctx context.Context, song *models.Song) error {
 	if song.ID != nil {
 		// Update song
 		query := `
-            UPDATE songs
+            UPDATE song
             SET name=$1, artist=$2, lyrics=$3, release_date=$4, url=$5
             WHERE id=$6
             `
@@ -50,7 +50,7 @@ func (r *SongRepository) Save(ctx context.Context, song *models.Song) error {
 		// Create new song
 		query := `
             INSERT INTO
-            songs(name, artist, lyrics, release_date, url)
+            song(name, artist, lyrics, release_date, url)
             VALUES($1, $2, $3, $4, $5)
             RETURNING id
             `
@@ -76,7 +76,7 @@ func (r *SongRepository) Save(ctx context.Context, song *models.Song) error {
 
 func (r *SongRepository) GetAll(ctx context.Context) ([]models.Song, error) {
 	songs := []models.Song{}
-	query := `SELECT * FROM songs ORDER BY id ASC`
+	query := `SELECT * FROM song ORDER BY id ASC`
 	log.Debug().Msgf("Running query: %s", query)
 	err := r.db.SelectContext(ctx, &songs, query)
 	if err != nil {
@@ -88,7 +88,7 @@ func (r *SongRepository) GetAll(ctx context.Context) ([]models.Song, error) {
 
 func (r *SongRepository) GetById(ctx context.Context, id int) (*models.Song, error) {
 	song := models.Song{}
-	query := `SELECT * FROM songs WHERE id=$1`
+	query := `SELECT * FROM song WHERE id=$1`
 	log.Debug().Msgf("Running query: %s", query)
 	err := r.db.GetContext(ctx, &song, query, id)
 	if err != nil {
@@ -103,7 +103,7 @@ func (r *SongRepository) GetById(ctx context.Context, id int) (*models.Song, err
 func (r *SongRepository) GetFiltered(ctx context.Context, filter SongFilter, offset, limit int) ([]models.Song, error) {
 	songs := []models.Song{}
 	// Construct query from filter
-	query := `SELECT * FROM songs WHERE 1=1`
+	query := `SELECT * FROM song WHERE 1=1`
 	log.Debug().Msgf("Running query: %s", query)
 	count := 1
 	if filter.Name != "" {
@@ -143,7 +143,7 @@ func (r *SongRepository) GetFiltered(ctx context.Context, filter SongFilter, off
 }
 
 func (r *SongRepository) Delete(ctx context.Context, id int) error {
-	query := `DELETE FROM songs WHERE id = $1`
+	query := `DELETE FROM song WHERE id = $1`
 	log.Debug().Msgf("Running query: %s", query)
 	res, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {

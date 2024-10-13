@@ -36,7 +36,7 @@ func findProjectRoot() (string, error) {
 
 func PrintSong(song *models.Song) {
 	fmt.Printf("\nID: %d\n Name: %s\n Artist: %s\n Lyrics: %s\n ReleaseDate: %s\n URL: %s\n",
-		*song.ID, song.Name, song.Artist, song.Lyrics, song.ReleaseDate, song.URL)
+		*song.ID, song.Name, song.Artist, song.Lyrics, song.ReleaseDate.Format("02.01.2006"), song.URL)
 }
 
 func TestMain(m *testing.M) {
@@ -76,7 +76,7 @@ func TestSave(t *testing.T) {
 		Name:        "Song Name",
 		Artist:      "Song Artist",
 		Lyrics:      "Song Lyrics",
-		ReleaseDate: "2021-01-01",
+		ReleaseDate: time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
 		URL:         "https://song.url",
 	}
 	// Save the song
@@ -98,7 +98,7 @@ func TestSave2(t *testing.T) {
 			"Cause I've been blastin' and laughin' so long that\n" +
 			"Even my mama thinks that my mind is gone\n" +
 			"But I ain't never crossed",
-		ReleaseDate: "1995-11-07",
+		ReleaseDate: time.Date(1995, 11, 7, 0, 0, 0, 0, time.UTC),
 		URL:         "https://www.youtube.com/watch?v=fPO76Jlnz6c",
 	}
 	// Save the song
@@ -116,7 +116,7 @@ func TestSave3(t *testing.T) {
 		Name:        "Song Name 2",
 		Artist:      "Song Artist",
 		Lyrics:      "Song Lyrics",
-		ReleaseDate: "2021-01-01",
+		ReleaseDate: time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
 		URL:         "https://song.url",
 	}
 	// Save the song
@@ -134,7 +134,7 @@ func TestSaveSame(t *testing.T) {
 		Name:        "Song Name",
 		Artist:      "Song Artist",
 		Lyrics:      "Song Lyrics",
-		ReleaseDate: "2023-01-01",
+		ReleaseDate: time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
 		URL:         "https://song.com",
 	}
 	// Save the song
@@ -154,7 +154,7 @@ func TestUpdate(t *testing.T) {
 		Name:        "Song Name",
 		Artist:      "Song Artist",
 		Lyrics:      "Song Updated Lyrics",
-		ReleaseDate: "2023-01-01",
+		ReleaseDate: time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
 		URL:         "https://updated.song.com",
 	}
 	// Save the song

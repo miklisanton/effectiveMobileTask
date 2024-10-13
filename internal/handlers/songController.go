@@ -5,14 +5,16 @@ import (
 	"fmt"
 	"music-lib/internal/config"
 	"music-lib/internal/db/models"
+	"music-lib/internal/db/repository"
 	"music-lib/internal/services"
 	"music-lib/internal/utils"
 	"net/http"
 	"strconv"
 	"time"
 
-	"github.com/go-playground/validator"
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog/log"
 )
 
 type SongController struct {
@@ -24,7 +26,7 @@ type SongController struct {
 func NewSongController(
         songS services.ISongService,
         musicInfoS services.IMusicInfoService,
-        cfg config.Config) *SongController {
+        cfg *config.Config) *SongController {
 
     timeout := time.Duration(cfg.ExternalAPI.Timeout) * time.Second
 
@@ -36,22 +38,30 @@ func (sc *SongController) CreateSong(c echo.Context) error {
     ctx, cancel := context.WithTimeout(c.Request().Context(), sc.Timeout)
     defer cancel()
     // Extract song name and artist from request
-    songRequest := new(utils.SongRequest)
+    songRequest := new(utils.SongPostRequest)
     if err := c.Bind(songRequest); err != nil {
         return c.JSON(http.StatusBadRequest, utils.Response{Message: err.Error()})
     }
     if err := validator.New().Struct(songRequest); err != nil {
-        return c.JSON(http.StatusBadRequest, utils.Response{Message: err.Error()})
+        var errors []string
+        for _, e := range err.(validator.ValidationErrors) {
+            errors = append(errors, fmt.Sprintf("%s: %s", e.Field(), e.Tag()))
+        }
+
+        return c.JSON(http.StatusBadRequest, utils.Response{Message: "invalid request", Data: errors})
     }
     // Fetch song details from external service
-    songDetail, err := sc.MusicInfoService.GetSongInfo(songRequest.Artist, songRequest.Name)
+    songDetail, err := sc.MusicInfoService.GetSongInfo(songRequest.Group, songRequest.Song)
     if err != nil {
-        return c.JSON(http.StatusInternalServerError, utils.Response{Message: err.Error()})
+        if err.Error() == "404" {
+            return c.JSON(http.StatusNotFound, utils.Response{Message: "Song not found"})
+        }
+        return c.JSON(http.StatusInternalServerError, utils.Response{Message: "external api error: " + err.Error()})
     }
     // Save song to db
     song := &models.Song{
-        Artist:      songRequest.Artist,
-        Name:        songRequest.Name,
+        Artist:      songRequest.Group,
+        Name:        songRequest.Song,
         Lyrics:      songDetail.Text,
         URL:         songDetail.Link,
         ReleaseDate: songDetail.ReleaseDate,
@@ -85,7 +95,7 @@ func (sc *SongController) GetSongs(c echo.Context) error {
     defer cancel()
     // Parse query params
     query := c.Request().URL.Query()
-    f, p, l, err := utils.ParseQuery(query)
+    f, p, l, err := repository.ParseQuery(query)
     if err != nil {
         return c.JSON(http.StatusBadRequest, utils.Response{Message: err.Error()})
     }
@@ -112,17 +122,28 @@ func (sc *SongController) PatchSong(c echo.Context) error {
         return c.JSON(http.StatusBadRequest, utils.Response{Message: err.Error()})
     }
     if err := validator.New().Struct(sReq); err != nil {
-        return c.JSON(http.StatusBadRequest, utils.Response{Message: err.Error()})
+        var errors []string
+        for _, e := range err.(validator.ValidationErrors) {
+            errors = append(errors, fmt.Sprintf("%s: %s", e.Field(), e.Tag()))
+        }
+
+        return c.JSON(http.StatusBadRequest, utils.Response{Message: "invalid request", Data: errors})
+    }
+    // Get original song from db
+    song, err := sc.SongService.GetSong(ctx, id)
+    if err != nil {
+        return c.JSON(http.StatusNotFound, utils.Response{Message: err.Error()})
     }
     // Update song in db
-    song := &models.Song{
-        Artist:      sReq.Artist,
-        Name:        sReq.Name,
+    newSong := &models.Song{
+        ID:          &id,
+        Artist:      sReq.Group,
+        Name:        sReq.Song,
         Lyrics:      sReq.Lyrics,
         URL:         sReq.URL,
         ReleaseDate: sReq.ReleaseDate,
     }
-    updatedSong, err := sc.SongService.UpdateSong(ctx, id, song)
+    updatedSong, err := sc.SongService.UpdateSong(ctx, song, newSong)
     if err != nil {
         return c.JSON(http.StatusInternalServerError, utils.Response{Message: err.Error()})
     }
@@ -143,22 +164,34 @@ func (sc *SongController) PutSong(c echo.Context) error {
     if err := c.Bind(sReq); err != nil {
         return c.JSON(http.StatusBadRequest, utils.Response{Message: err.Error()})
     }
+    log.Logger.Debug().Msgf("SongPutRequest date: %s", sReq.ReleaseDate.Format("02.01.2006"))
     if err := validator.New().Struct(sReq); err != nil {
-        return c.JSON(http.StatusBadRequest, utils.Response{Message: err.Error()})
+        return c.JSON(http.StatusBadRequest, utils.Response{Message: "invalid request", Data: err.Error()})
     }
-    // Update song in db
-    song := &models.Song{
-        Artist:      sReq.Artist,
-        Name:        sReq.Name,
+    newSong := &models.Song{
+        Artist:      sReq.Group,
+        Name:        sReq.Song,
         Lyrics:      sReq.Lyrics,
         URL:         sReq.URL,
         ReleaseDate: sReq.ReleaseDate,
     }
-    updatedSong, err := sc.SongService.UpdateSong(ctx, id, song)
+    // Get original song from db
+    song, err := sc.SongService.GetSong(ctx, id)
     if err != nil {
-        return c.JSON(http.StatusInternalServerError, utils.Response{Message: err.Error()})
+        // Create new song in db
+        if err := sc.SongService.CreateSong(ctx, newSong); err != nil {
+            return c.JSON(http.StatusInternalServerError, utils.Response{Message: err.Error()})
+        }
+        return c.JSON(http.StatusCreated, utils.Response{Message: "Song created", Data: newSong})
+    } else {
+        // Update newSong in db
+        newSong.ID = &id
+        updatedSong, err := sc.SongService.UpdateSong(ctx, song, newSong)
+        if err != nil {
+            return c.JSON(http.StatusInternalServerError, utils.Response{Message: err.Error()})
+        }
+        return c.JSON(http.StatusOK, utils.Response{Message: "Song updated", Data: updatedSong})
     }
-    return c.JSON(http.StatusOK, utils.Response{Message: "Song updated", Data: updatedSong})
 }
 
 func (sc *SongController) DeleteSong(c echo.Context) error {
