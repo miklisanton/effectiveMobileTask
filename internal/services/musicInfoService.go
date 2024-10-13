@@ -76,7 +76,7 @@ func (ms *MusicInfoService) GetSongInfo(artist, name string) (*SongDetail, error
         return nil, fmt.Errorf("invalid response: %v", err)
     }
 
-    log.Debug().Msgf("Release date: %s", songDetail.ReleaseDate)
+    log.Debug().Msgf("Release date: %v", songDetail.ReleaseDate)
 
 	return &songDetail, nil
 }

@@ -1,17 +1,18 @@
 package repository
 
 import (
-    "fmt"
-    "net/url"
-    "strconv"
-    "time"
+	"fmt"
+	"music-lib/internal/utils"
+	"net/url"
+	"strconv"
+	"time"
 )
 
 type SongFilter struct {
 	Name   string `db:"name"`
 	Artist string `db:"artist"`
-	After  string `db:"after"`  // Song released after this date, inclusive
-	Before string `db:"before"` // Song released before this date, inclusive
+	After  utils.CustomDate `db:"after"`  // Song released after this date, inclusive
+	Before utils.CustomDate `db:"before"` // Song released before this date, inclusive
 }
 
 // ParseQuery parses query parameters and returns SongFilter, page and limit
@@ -30,17 +31,17 @@ func ParseQuery(query url.Values) (*SongFilter, int, int, error) {
             case "song":
                 f.Name = value[0]
             case "after":
-                _, err := time.Parse("2006-01-02", value[0])
+                t, err := time.Parse("02.01.2006", value[0])
                 if err != nil {
-                    return nil, 0, 0, fmt.Errorf("invalid date format: %v, must be yyyy-mm-dd", value[0])
+                    return nil, 0, 0, fmt.Errorf("invalid date format: %v, must be dd.mm.yyyy", value[0])
                 }
-                f.After = value[0]
+                f.After = utils.CustomDate(t)
             case "before":
-                _, err := time.Parse("2006-01-02", value[0])
+                t, err := time.Parse("02.01.2006", value[0])
                 if err != nil {
-                    return nil, 0, 0, fmt.Errorf("invalid date format: %v, must be yyyy-mm-dd", value[0])
+                    return nil, 0, 0, fmt.Errorf("invalid date format: %v, must be dd.mm.yyyy", value[0])
                 }
-                f.Before = value[0]
+                f.Before = utils.CustomDate(t)
             case "page":
                 page, err := strconv.Atoi(value[0])
                 if err != nil || page < 1 {

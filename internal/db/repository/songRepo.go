@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"music-lib/internal/db/models"
+	"music-lib/internal/utils"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
@@ -114,11 +115,12 @@ func (r *SongRepository) GetFiltered(ctx context.Context, filter SongFilter, off
 		query += ` AND artist= :artist`
 		count++
 	}
-	if filter.After != "" {
+    t := utils.CustomDate{}
+	if filter.After != t {
 		query += ` AND release_date >= :after`
 		count++
 	}
-	if filter.Before != "" {
+	if filter.Before != t {
 		query += ` AND release_date <= :before`
 		count++
 	}
