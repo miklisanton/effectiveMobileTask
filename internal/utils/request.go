@@ -22,7 +22,7 @@ type SongPatchRequest struct {
     Song        string  `json:"song"`
     Lyrics      string  `json:"lyrics"`
     ReleaseDate CustomDate  `json:"release_date"`
-    URL         string  `json:"url" validate:"url"`
+    URL         string  `json:"url"`
 }
 
 type SongPutRequest struct {
@@ -30,7 +30,7 @@ type SongPutRequest struct {
     Song        string  `json:"song" validate:"required"`
     Lyrics      string  `json:"lyrics" validate:"required"`
     ReleaseDate CustomDate   `json:"release_date" validate:"required"`
-    URL         string  `json:"url" validate:"required,url"`
+    URL         string  `json:"url" validate:"required"`
 }
 
 func (j *CustomDate) UnmarshalJSON(b []byte) error {

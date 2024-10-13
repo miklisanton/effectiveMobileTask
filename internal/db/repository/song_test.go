@@ -3,14 +3,16 @@ package repository
 import (
 	"context"
 	"fmt"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"music-lib/internal/db/drivers"
 	"music-lib/internal/db/models"
+	"music-lib/internal/utils"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 var songRepo ISongRepo
@@ -76,7 +78,7 @@ func TestSave(t *testing.T) {
 		Name:        "Song Name",
 		Artist:      "Song Artist",
 		Lyrics:      "Song Lyrics",
-		ReleaseDate: time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+		ReleaseDate: utils.CustomDate(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)),
 		URL:         "https://song.url",
 	}
 	// Save the song
@@ -98,7 +100,7 @@ func TestSave2(t *testing.T) {
 			"Cause I've been blastin' and laughin' so long that\n" +
 			"Even my mama thinks that my mind is gone\n" +
 			"But I ain't never crossed",
-		ReleaseDate: time.Date(1995, 11, 7, 0, 0, 0, 0, time.UTC),
+		ReleaseDate: utils.CustomDate(time.Date(1995, 11, 7, 0, 0, 0, 0, time.UTC)),
 		URL:         "https://www.youtube.com/watch?v=fPO76Jlnz6c",
 	}
 	// Save the song
@@ -116,7 +118,7 @@ func TestSave3(t *testing.T) {
 		Name:        "Song Name 2",
 		Artist:      "Song Artist",
 		Lyrics:      "Song Lyrics",
-		ReleaseDate: time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+		ReleaseDate: utils.CustomDate(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)),
 		URL:         "https://song.url",
 	}
 	// Save the song
@@ -134,7 +136,7 @@ func TestSaveSame(t *testing.T) {
 		Name:        "Song Name",
 		Artist:      "Song Artist",
 		Lyrics:      "Song Lyrics",
-		ReleaseDate: time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+		ReleaseDate: utils.CustomDate(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)),
 		URL:         "https://song.com",
 	}
 	// Save the song
@@ -154,7 +156,7 @@ func TestUpdate(t *testing.T) {
 		Name:        "Song Name",
 		Artist:      "Song Artist",
 		Lyrics:      "Song Updated Lyrics",
-		ReleaseDate: time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+		ReleaseDate: utils.CustomDate(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)),
 		URL:         "https://updated.song.com",
 	}
 	// Save the song

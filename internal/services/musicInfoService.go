@@ -25,9 +25,9 @@ type MusicInfoService struct {
 }
 
 type SongDetail struct {
-    ReleaseDate utils.CustomDate `json:"releaseDate" validate:"required, datetime=02.01.2006"`
+    ReleaseDate utils.CustomDate `json:"releaseDate" validate:"required"`
     Text        string `json:"text" validate:"required"`
-    Link        string `json:"link" validate:"required, url"`
+    Link        string `json:"link" validate:"required"`
 }
 
 func NewMusicInfoService(cfg *config.Config) (*MusicInfoService, error) {
