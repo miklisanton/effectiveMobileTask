@@ -2,26 +2,28 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"music-lib/internal/db/models"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 )
 
 type ISongRepo interface {
 	GetAll(ctx context.Context) ([]models.Song, error)
 	GetFiltered(ctx context.Context, filter SongFilter, offset int, limit int) ([]models.Song, error)
-	GetByName(ctx context.Context, artist string, name string) (*models.Song, error)
+	GetById(ctx context.Context, id int) (*models.Song, error)
 	Save(ctx context.Context, song *models.Song) error
-	Delete(ctx context.Context, artist string, name string) (int, error)
+	Delete(ctx context.Context, id int) error
 }
 
 type SongRepository struct {
 	db *sqlx.DB
 }
 
-func NewSongRepository(db *sqlx.DB) *SongRepository {
+func NewSongRepository(db *sqlx.DB) ISongRepo {
 	return &SongRepository{db}
 }
 
@@ -37,6 +39,10 @@ func (r *SongRepository) Save(ctx context.Context, song *models.Song) error {
 		log.Debug().Msgf("Running query: %s", query)
 		_, err := r.db.ExecContext(ctx, query, song.Name, song.Artist, song.Lyrics, song.ReleaseDate, song.URL, *song.ID)
 		if err != nil {
+            if err, ok := err.(*pq.Error); ok && err.Code == "23505" {
+                // Unique violation
+                return fmt.Errorf("Song with name %s and artist %s already exists", song.Name, song.Artist)
+            }
 			return err
 		}
 		return nil
@@ -53,6 +59,10 @@ func (r *SongRepository) Save(ctx context.Context, song *models.Song) error {
 
 		err := row.Err()
 		if err != nil {
+            if err, ok := err.(*pq.Error); ok && err.Code == "23505" {
+                // Unique violation
+                return fmt.Errorf("Song with name %s and artist %s already exists", song.Name, song.Artist)
+            }
 			return err
 		}
 		err = row.Scan(&song.ID)
@@ -76,12 +86,15 @@ func (r *SongRepository) GetAll(ctx context.Context) ([]models.Song, error) {
 	return songs, nil
 }
 
-func (r *SongRepository) GetByName(ctx context.Context, artist, name string) (*models.Song, error) {
+func (r *SongRepository) GetById(ctx context.Context, id int) (*models.Song, error) {
 	song := models.Song{}
-	query := `SELECT * FROM songs WHERE artist=$1 AND name=$2`
+	query := `SELECT * FROM songs WHERE id=$1`
 	log.Debug().Msgf("Running query: %s", query)
-	err := r.db.GetContext(ctx, &song, query, artist, name)
+	err := r.db.GetContext(ctx, &song, query, id)
 	if err != nil {
+        if err == sql.ErrNoRows {
+            return nil, fmt.Errorf("Song with id %d doesn't exist", id)
+        }
 		return nil, err
 	}
 	return &song, nil
@@ -129,16 +142,19 @@ func (r *SongRepository) GetFiltered(ctx context.Context, filter SongFilter, off
 	return songs, nil
 }
 
-func (r *SongRepository) Delete(ctx context.Context, artist, name string) (int, error) {
-	query := `DELETE FROM songs WHERE artist=$1 AND name=$2`
+func (r *SongRepository) Delete(ctx context.Context, id int) error {
+	query := `DELETE FROM songs WHERE id = $1`
 	log.Debug().Msgf("Running query: %s", query)
-	res, err := r.db.ExecContext(ctx, query, artist, name)
+	res, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
-		return 0, err
+		return err
 	}
 	count, err := res.RowsAffected()
 	if err != nil {
-		return 0, err
+		return err
 	}
-	return int(count), nil
+    if count != 1 {
+        return fmt.Errorf("Song with id %d not found", id)
+    }
+	return nil
 }

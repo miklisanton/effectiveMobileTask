@@ -166,8 +166,8 @@ func TestUpdate(t *testing.T) {
 	t.Logf("Updated song with id: %d", *song.ID)
 }
 
-func TestGetByName(t *testing.T) {
-	song, err := songRepo.GetByName(context.Background(), "Coolio", "Gangsta's Paradise")
+func TestGetById(t *testing.T) {
+	song, err := songRepo.GetById(context.Background(), 1)
 	if err != nil {
 		t.Fatalf("Error getting song by name: %v", err)
 	}
@@ -175,8 +175,8 @@ func TestGetByName(t *testing.T) {
 	PrintSong(song)
 }
 
-func TestGetByNameNotFound(t *testing.T) {
-	song, err := songRepo.GetByName(context.Background(), "Coolio", "Gangsta's Paradise 2")
+func TestGetByIdNotFound(t *testing.T) {
+	song, err := songRepo.GetById(context.Background(), 1000)
 	if err == nil {
 		t.Fatalf("Expected error, got nil and song: %v", song)
 	}
@@ -201,13 +201,16 @@ func TestGetFiltered(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	n, err := songRepo.Delete(context.Background(), "Song Artist", "Song Name")
+    err := songRepo.Delete(context.Background(), 1)
 	if err != nil {
 		t.Fatalf("Error deleting song: %v", err)
 	}
+}
 
-	if n != 1 {
-		t.Fatalf("Expected to delete 1 song, deleted %d", n)
+func TestDeleteNotExist(t *testing.T) {
+    err := songRepo.Delete(context.Background(), 100)
+	if err == nil {
+		t.Fatalf("Expected error, got nil and deleted")
 	}
 }
 
