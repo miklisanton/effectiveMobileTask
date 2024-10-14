@@ -15,5 +15,8 @@ PORT='8080'
 BASE_URL='http://host.docker.internal:8088'
 TIMEOUT='10'
 ```
-2. docker compose up --build -d
-3. Swagger documentation on http://localhost:[PORT]/swagger
+2. Run docker compose command
+```bash
+docker compose up --build -d
+```
+4. Swagger documentation on http://localhost:[PORT]/swagger
