@@ -19,4 +19,4 @@ TIMEOUT='10'
 ```bash
 docker compose up --build -d
 ```
-4. Swagger documentation on http://localhost:[PORT]/swagger
+4. Swagger documentation on http://localhost:[PORT]/swagger/
