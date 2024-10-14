@@ -188,7 +188,6 @@ func TestGetByIdNotFound(t *testing.T) {
 
 func TestGetFiltered(t *testing.T) {
 	filter := SongFilter{
-		After:  "1995-11-08",
 		Artist: "Song Artist",
 	}
 
