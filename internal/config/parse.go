@@ -18,7 +18,8 @@ type Config struct {
 		Password string `yaml:"password"`
 	}
 	Server struct {
-		Port string `yaml:"port"`
+		Port    string `yaml:"port"`
+		Timeout int    `yaml:"timeout"`
 	}
 	ExternalAPI struct {
 		BaseURL string `yaml:"base-url"`

@@ -15,7 +15,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-    "github.com/swaggo/echo-swagger"
+	"github.com/swaggo/echo-swagger"
 	_ "music-lib/docs"
 )
 
@@ -99,8 +99,8 @@ func main() {
 	pg.PUT("/songs/:id", songController.PutSong)
 	pg.PATCH("/songs/:id", songController.PatchSong)
 	pg.DELETE("/songs/:id", songController.DeleteSong)
-    // Swagger
-    e.GET("/swagger/*", echoSwagger.WrapHandler)
+	// Swagger
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 	// Start server
 	e.Logger.Fatal(e.Start(":" + cfg.Server.Port))
 }

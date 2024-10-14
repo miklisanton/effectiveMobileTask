@@ -2,12 +2,16 @@ package drivers
 
 import (
 	"database/sql"
+	"time"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/pressly/goose/v3"
 )
 
 func Connect(URL string) (*sqlx.DB, error) {
+	// Wait for db to start
+	time.Sleep(3 * time.Second)
 	db, err := sql.Open("postgres", URL)
 	if err != nil {
 		return nil, err

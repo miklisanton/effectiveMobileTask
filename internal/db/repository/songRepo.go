@@ -42,7 +42,7 @@ func (r *SongRepository) Save(ctx context.Context, song *models.Song) error {
 		if err != nil {
 			if err, ok := err.(*pq.Error); ok && err.Code == "23505" {
 				// Unique violation
-				return fmt.Errorf("Song with name %s and artist %s already exists", song.Name, song.Artist)
+				return fmt.Errorf("duplicate error: song with name %s and artist %s already exists", song.Name, song.Artist)
 			}
 			return err
 		}
@@ -62,7 +62,7 @@ func (r *SongRepository) Save(ctx context.Context, song *models.Song) error {
 		if err != nil {
 			if err, ok := err.(*pq.Error); ok && err.Code == "23505" {
 				// Unique violation
-				return fmt.Errorf("Song with name %s and artist %s already exists", song.Name, song.Artist)
+				return fmt.Errorf("duplicate error: song with name %s and artist %s already exists", song.Name, song.Artist)
 			}
 			return err
 		}
@@ -94,7 +94,7 @@ func (r *SongRepository) GetById(ctx context.Context, id int) (*models.Song, err
 	err := r.db.GetContext(ctx, &song, query, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("Song with id %d doesn't exist", id)
+			return nil, fmt.Errorf("not found error: song with id %d doesn't exist", id)
 		}
 		return nil, err
 	}
@@ -134,6 +134,8 @@ func (r *SongRepository) GetFiltered(ctx context.Context, filter SongFilter, off
 	boundQuery += fmt.Sprintf(" LIMIT $%d OFFSET $%d", count, count+1)
 
 	log.Debug().Msgf("Running query: %s", boundQuery)
+	log.Debug().Msgf("Filter args: %v", filterArgs)
+	log.Debug().Msgf("Limit: %d, Offset: %d", limit, offset)
 	// Append limit and offset to the end of the query
 	args := append(filterArgs, limit, offset)
 	err = r.db.SelectContext(ctx, &songs, boundQuery, args...)
@@ -156,7 +158,7 @@ func (r *SongRepository) Delete(ctx context.Context, id int) error {
 		return err
 	}
 	if count != 1 {
-		return fmt.Errorf("Song with id %d not found", id)
+		return fmt.Errorf("not found error: song with id %d not found", id)
 	}
 	return nil
 }
