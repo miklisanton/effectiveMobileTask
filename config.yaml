@@ -6,8 +6,8 @@ db:
   name: ${DB_NAME}
 server:
   port: ${PORT}
+  timeout: ${TIMEOUT}
 external-api:
   base-url: ${BASE_URL}
-  retries: ${RETRIES}
   timeout: ${TIMEOUT}
 
