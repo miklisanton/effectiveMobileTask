@@ -23,6 +23,7 @@ func ParseQuery(query url.Values) (*SongFilter, int, int, error) {
 	// Default values
 	page := 1
 	limit := 10
+    var err error
 	// Parse query parameters
 	for key, value := range query {
 		switch key {
@@ -43,12 +44,12 @@ func ParseQuery(query url.Values) (*SongFilter, int, int, error) {
 			}
 			f.Before = utils.CustomDate(t)
 		case "page":
-			page, err := strconv.Atoi(value[0])
+			page, err = strconv.Atoi(value[0])
 			if err != nil || page < 1 {
 				return nil, 0, 0, fmt.Errorf("invalid page number: %v", value[0])
 			}
 		case "limit":
-			limit, err := strconv.Atoi(value[0])
+            limit, err = strconv.Atoi(value[0])
 			if err != nil || limit < 1 {
 				return nil, 0, 0, fmt.Errorf("invalid limit: %v", value[0])
 			}

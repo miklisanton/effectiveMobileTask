@@ -51,6 +51,7 @@ func (s SongService) GetSong(ctx context.Context, id int) (*models.Song, error) 
 func (s SongService) GetSongs(ctx context.Context, f repository.SongFilter, page, limit int) ([]models.Song, error) {
 	// Calculate offset
 	offset := (page - 1) * limit
+    log.Logger.Debug().Msgf("limit: %d, offset: %d", limit, offset)
 	songs, err := s.Repo.GetFiltered(ctx, f, offset, limit)
 	if err != nil {
 		log.Logger.Error().Err(err).Msgf("failed to get songs")
