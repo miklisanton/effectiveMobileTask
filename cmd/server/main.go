@@ -15,6 +15,8 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+    "github.com/swaggo/echo-swagger"
+	_ "music-lib/docs"
 )
 
 var (
@@ -58,6 +60,12 @@ func init() {
 	log.Info().Msg("Database connected")
 }
 
+// @title Songs API
+// @version 1.0
+// @description This is an API for managing songs library.
+
+// @host localhost:8080
+// @BasePath /api1/public
 func main() {
 	// Setup services
 	songRepo := repository.NewSongRepository(db)
@@ -91,6 +99,8 @@ func main() {
 	pg.PUT("/songs/:id", songController.PutSong)
 	pg.PATCH("/songs/:id", songController.PatchSong)
 	pg.DELETE("/songs/:id", songController.DeleteSong)
+    // Swagger
+    e.GET("/swagger/*", echoSwagger.WrapHandler)
 	// Start server
 	e.Logger.Fatal(e.Start(":" + cfg.Server.Port))
 }

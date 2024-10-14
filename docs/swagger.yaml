@@ -1,0 +1,435 @@
+basePath: /api1/public
+definitions:
+  models.Song:
+    properties:
+      group:
+        example: Artist or group name
+        type: string
+      id:
+        example: 1
+        type: integer
+      lyrics:
+        example: Lyrics of the song
+        type: string
+      release_date:
+        example: 02.01.2006
+        format: string
+        type: string
+      song:
+        example: Song name
+        type: string
+      url:
+        example: https://www.youtube.com/watch?v=12345
+        type: string
+    type: object
+  utils.Response:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+  utils.SongPatchRequest:
+    properties:
+      group:
+        example: Artist or group name
+        type: string
+      lyrics:
+        example: New lyrics of the song
+        type: string
+      release_date:
+        example: 02.01.2006
+        format: string
+        type: string
+      song:
+        example: Song name
+        type: string
+      url:
+        example: https://www.youtube.com/watch?v=12345
+        type: string
+    type: object
+  utils.SongPostRequest:
+    properties:
+      group:
+        example: Artist or group name
+        type: string
+      song:
+        example: Song name
+        type: string
+    required:
+    - group
+    - song
+    type: object
+  utils.SongPutRequest:
+    properties:
+      group:
+        example: Artist or group name
+        type: string
+      lyrics:
+        example: New lyrics of the song
+        type: string
+      release_date:
+        example: 02.01.2006
+        format: string
+        type: string
+      song:
+        example: Song name
+        type: string
+      url:
+        example: https://www.youtube.com/watch?v=12345
+        type: string
+    required:
+    - group
+    - lyrics
+    - release_date
+    - song
+    - url
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is an API for managing songs library.
+  title: Songs API
+  version: "1.0"
+paths:
+  /songs:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of songs with optional filters such as group, song
+        name, and date range, and supports pagination with page and limit parameters.
+      parameters:
+      - description: Filter by group/artist name
+        in: query
+        name: group
+        type: string
+      - description: Filter by song name
+        in: query
+        name: song
+        type: string
+      - description: Filter by songs released after date (dd.mm.yyyy)
+        in: query
+        name: after
+        type: string
+      - description: Filter by songs released before date (dd.mm.yyyy)
+        in: query
+        name: before
+        type: string
+      - description: Page number for pagination, default 1
+        in: query
+        name: page
+        type: integer
+      - description: Limit per page, default 10
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Songs received
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                ' data':
+                  items:
+                    $ref: '#/definitions/models.Song'
+                  type: array
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Error while parsing query params
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+      summary: Get songs with optional filtering and pagination
+      tags:
+      - Songs
+    post:
+      consumes:
+      - application/json
+      description: Create a new song by providing the group and song name. The song
+        details are fetched from an external API.
+      parameters:
+      - description: Song request
+        in: body
+        name: song
+        required: true
+        schema:
+          $ref: '#/definitions/utils.SongPostRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Song created
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                ' data':
+                  $ref: '#/definitions/models.Song'
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Invalid request
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                ' data':
+                  items:
+                    type: string
+                  type: array
+                message:
+                  type: string
+              type: object
+        "404":
+          description: Song not found
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+        "500":
+          description: External API error or internal server error
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+      summary: Create a new song
+      tags:
+      - Songs
+  /songs/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove song from database
+      parameters:
+      - description: Song ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Song deleted
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Invalid song ID
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+      summary: Delete a song by ID
+      tags:
+      - Songs
+    get:
+      consumes:
+      - application/json
+      description: Retrieve song details by ID
+      parameters:
+      - description: Song ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Song received
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                ' data':
+                  $ref: '#/definitions/models.Song'
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Invalid song ID
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+      summary: Get a song by ID
+      tags:
+      - Songs
+    patch:
+      consumes:
+      - application/json
+      description: Update one or more fields of an existing song by providing the
+        song ID and the fields to update.
+      parameters:
+      - description: Song ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: song
+        required: true
+        schema:
+          $ref: '#/definitions/utils.SongPatchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Song updated
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                ' data':
+                  $ref: '#/definitions/models.Song'
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Invalid song ID or request
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+        "404":
+          description: Song not found
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+      summary: Partially update a song
+      tags:
+      - Songs
+    put:
+      consumes:
+      - application/json
+      description: Replace an existing song by providing the song ID and the full
+        song data. If the song doesn't exist, create a new one.
+      parameters:
+      - description: Song ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Full song details
+        in: body
+        name: song
+        required: true
+        schema:
+          $ref: '#/definitions/utils.SongPutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Song updated
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                ' data':
+                  $ref: '#/definitions/models.Song'
+                message:
+                  type: string
+              type: object
+        "201":
+          description: Song created
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                ' data':
+                  $ref: '#/definitions/models.Song'
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Invalid song ID or request
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                message:
+                  type: string
+              type: object
+      summary: Fully update a song or create a new one
+      tags:
+      - Songs
+swagger: "2.0"
