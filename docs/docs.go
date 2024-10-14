@@ -216,6 +216,24 @@ const docTemplate = `{
                             ]
                         }
                     },
+                    "409": {
+                        "description": "Song already exists",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
                     "500": {
                         "description": "External API error or internal server error",
                         "schema": {
@@ -283,6 +301,24 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Invalid song ID",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Song not found",
                         "schema": {
                             "allOf": [
                                 {
@@ -410,6 +446,24 @@ const docTemplate = `{
                             ]
                         }
                     },
+                    "409": {
+                        "description": "Song already exists",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
@@ -472,6 +526,24 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Invalid song ID",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Song not found",
                         "schema": {
                             "allOf": [
                                 {

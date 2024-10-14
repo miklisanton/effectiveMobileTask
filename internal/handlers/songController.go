@@ -43,6 +43,7 @@ func NewSongController(
 // @Success      201  {object}  utils.Response{message=string, data=models.Song} "Song created"
 // @Failure      400  {object}  utils.Response{message=string, data=[]string} "Invalid request"
 // @Failure      404  {object}  utils.Response{message=string} "Song not found"
+// @Failure      409  {object}  utils.Response{message=string} "Song already exists"
 // @Failure      500  {object}  utils.Response{message=string} "External API error or internal server error"
 // @Router       /songs [post]
 func (sc *SongController) CreateSong(c echo.Context) error {
@@ -85,6 +86,11 @@ func (sc *SongController) CreateSong(c echo.Context) error {
 		ReleaseDate: songDetail.ReleaseDate,
 	}
 	if err := sc.SongService.CreateSong(ctx, song); err != nil {
+		if strings.Contains(err.Error(), "duplicate") {
+			return c.JSON(
+				http.StatusConflict,
+				utils.Response{Message: err.Error()})
+		}
 		return c.JSON(
 			http.StatusInternalServerError,
 			utils.Response{Message: err.Error()})
@@ -102,6 +108,7 @@ func (sc *SongController) CreateSong(c echo.Context) error {
 // @Param        id   path      int  true  "Song ID"
 // @Success      200  {object}  utils.Response{message=string, data=models.Song} "Song received"
 // @Failure      400  {object}  utils.Response{message=string} "Invalid song ID"
+// @Failure      404  {object}  utils.Response{message=string} "Song not found"
 // @Failure      500  {object}  utils.Response{message=string} "Internal server error"
 // @Router       /songs/{id} [get]
 func (sc *SongController) GetSong(c echo.Context) error {
@@ -118,6 +125,11 @@ func (sc *SongController) GetSong(c echo.Context) error {
 	// Fetch song from db
 	song, err := sc.SongService.GetSong(ctx, id)
 	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			return c.JSON(
+				http.StatusNotFound,
+				utils.Response{Message: err.Error()})
+		}
 		return c.JSON(
 			http.StatusInternalServerError,
 			utils.Response{Message: err.Error()})
@@ -209,8 +221,14 @@ func (sc *SongController) PatchSong(c echo.Context) error {
 	// Get original song from db
 	song, err := sc.SongService.GetSong(ctx, id)
 	if err != nil {
+		log.Logger.Error().Msgf(err.Error())
+		if strings.Contains(err.Error(), "not found") {
+			return c.JSON(
+				http.StatusNotFound,
+				utils.Response{Message: err.Error()})
+		}
 		return c.JSON(
-			http.StatusNotFound,
+			http.StatusInternalServerError,
 			utils.Response{Message: err.Error()})
 	}
 	// Update song in db
@@ -241,6 +259,7 @@ func (sc *SongController) PatchSong(c echo.Context) error {
 // @Success      200  {object}  utils.Response{message=string, data=models.Song} "Song updated"
 // @Success      201  {object}  utils.Response{message=string, data=models.Song} "Song created"
 // @Failure      400  {object}  utils.Response{message=string} "Invalid song ID or request"
+// @Failure      409  {object}  utils.Response{message=string} "Song already exists"
 // @Failure      500  {object}  utils.Response{message=string} "Internal server error"
 // @Router       /songs/{id} [put]
 func (sc *SongController) PutSong(c echo.Context) error {
@@ -284,6 +303,11 @@ func (sc *SongController) PutSong(c echo.Context) error {
 	if err != nil {
 		// Create new song in db
 		if err := sc.SongService.CreateSong(ctx, newSong); err != nil {
+			if strings.Contains(err.Error(), "duplicate") {
+				return c.JSON(
+					http.StatusConflict,
+					utils.Response{Message: err.Error()})
+			}
 			return c.JSON(
 				http.StatusInternalServerError,
 				utils.Response{Message: err.Error()})
@@ -314,6 +338,7 @@ func (sc *SongController) PutSong(c echo.Context) error {
 // @Param        id   path     int  true  "Song ID"
 // @Success      200  {object}  utils.Response{message=string} "Song deleted"
 // @Failure      400  {object}  utils.Response{message=string} "Invalid song ID"
+// @Failure      404  {object}  utils.Response{message=string} "Song not found"
 // @Failure      500  {object}  utils.Response{message=string} "Internal server error"
 // @Router       /songs/{id} [delete]
 func (sc *SongController) DeleteSong(c echo.Context) error {
@@ -329,6 +354,11 @@ func (sc *SongController) DeleteSong(c echo.Context) error {
 	}
 	// Delete song from db
 	if err := sc.SongService.DeleteSong(ctx, id); err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			return c.JSON(
+				http.StatusNotFound,
+				utils.Response{Message: err.Error()})
+		}
 		return c.JSON(
 			http.StatusInternalServerError,
 			utils.Response{Message: err.Error()})
